@@ -1,0 +1,61 @@
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block content%}
+
+<div>
+  <form action="" method="post">
+    {% csrf_token %}
+    <select name="collab" id="">
+      {% for collab in new_collaborators %}
+      <option value={{collab.id}}>{{collab.email}}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Add</button>
+  </form>
+</div>
+<hr>
+<h1>Classic editor</h1>
+<div id="editor">
+  <p>This is some sample content.</p>
+</div>
+
+{% endblock content %}
+
+{% block script %}
+<script>
+  let editor;
+
+  ClassicEditor.create(document.querySelector("#editor"))
+    .then((newEditor) => {
+      editor = newEditor;
+
+      // Function to send editor content over WebSocket
+      function sendContent() {
+        const content = editor.getData();
+        socket.send(
+          JSON.stringify({ type: "update_content", content: content })
+        );
+      }
+
+      // Event listener for editor changes
+      editor.model.document.on("change:data", sendContent);
+
+      // WebSocket connection
+      const socket = new WebSocket("ws://" + window.location.host + "/ws/");
+      console.log(socket)
+      // Event listener for WebSocket messages
+      socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+        if (data.type === "update_content") {
+          editor.setData(data.content);
+        }
+      };
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+</script>
+
+{% endblock script %}

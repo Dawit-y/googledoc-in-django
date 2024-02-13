@@ -1,47 +1,19 @@
-{% extends "main.html" %} {% load static %} {% block content%} {% comment %}
-<form method="POST">
-  {%csrf_token%} {{ form.media }} {{ form.as_p }}
-  <button type="submit">Save</button>
-</form>
-{% endcomment %}
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block content%}
+
 <h1>Classic editor</h1>
-<div id="editor">
-  <p>This is some sample content.</p>
-</div>
 
-{% endblock content %} {% block script %}
-<script>
-  let editor;
+<form method="POST">
+  {%csrf_token%}
+  <button type="submit">New Document</button>
+</form>
 
-  ClassicEditor.create(document.querySelector("#editor"))
-    .then((newEditor) => {
-      editor = newEditor;
+{% endblock content %}
 
-      // Function to send editor content over WebSocket
-      function sendContent() {
-        const content = editor.getData();
-        socket.send(
-          JSON.stringify({ type: "update_content", content: content })
-        );
-      }
 
-      // Event listener for editor changes
-      editor.model.document.on("change:data", sendContent);
-
-      // WebSocket connection
-      const socket = new WebSocket("ws://" + window.location.host + "/ws/");
-
-      // Event listener for WebSocket messages
-      socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-        if (data.type === "update_content") {
-          editor.setData(data.content);
-        }
-      };
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-</script>
+{% block script %}
 
 {% endblock script %}

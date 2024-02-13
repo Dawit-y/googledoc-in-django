@@ -4,6 +4,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 class EditorConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
+        
 
     async def disconnect(self, close_code):
         pass
@@ -14,6 +15,7 @@ class EditorConsumer(AsyncWebsocketConsumer):
             # Process the received content data if needed
             content = data.get('content')
             # Echo back the received content to all connected clients
+            print(content)
             await self.channel_layer.group_send(
                 'editor_updates',
                 {

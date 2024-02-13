@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
-    <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
-    <title>Google Doc</title>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <span>
-          <h3>Welcome {{request.user}}</h3>
-        </span>
-      </nav>
-    </header>
-    <main>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+  <script src="https://cdn.ckeditor.com/ckeditor5/41.1.0/classic/ckeditor.js"></script>
+  <title>Google Doc</title>
+</head>
+
+<body>
+  <header>
+    <nav>
       <h1>Google Doc Clone</h1>
-      {% block content %} {% endblock content %}
-    </main>
-    {% comment %} {% include 'footer.html' %} {% endcomment %}
-     {% block script %} {% endblock script %}
-  </body>
+      <span>
+        <h3>Welcome {{request.user}}</h3>
+      </span>
+    </nav>
+  </header>
+  <main>
+
+    {% block content %} {% endblock content %}
+  </main>
+  {% comment %} {% include 'footer.html' %} {% endcomment %}
+  {% block script %} {% endblock script %}
+</body>
+
 </html>
