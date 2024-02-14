@@ -4,8 +4,14 @@
 
 {% block content%}
 
-<h1>Classic editor</h1>
+<p>Your Files</p>
+<ul>
+  {% for doc in documents %}
+  <li> <a href="{% url 'new_document'  doc.id %}">{{doc.name}}</a></li>
+  {% endfor %}
+</ul>
 
+<hr>
 <form method="POST">
   {%csrf_token%}
   <button type="submit">New Document</button>

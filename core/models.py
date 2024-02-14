@@ -17,6 +17,7 @@ class User(AbstractUser):
 
 
 class Document(models.Model):
+    name = models.CharField(max_length = 150, blank=True, null = True)
     author = models.ForeignKey(User, on_delete = models.CASCADE, related_name="authored")
     collaborators = models.ManyToManyField(User, blank=True ,related_name = "colaborated_on")
     body = CKEditor5Field('Text', config_name='extends', blank = True, null=True)
@@ -25,5 +26,4 @@ class Document(models.Model):
 
     def __str__(self) -> str:
         return f"{self.author}'s file"
-    
 

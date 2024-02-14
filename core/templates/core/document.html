@@ -4,7 +4,19 @@
 
 {% block content%}
 
+<span>
+  <p>Collaborators</p>
+  {% if collaborators %}
+  <ul>
+    {% for collab in collaborators %}
+    <li>{{collab.email}}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</span>
+<hr>
 <div>
+  <p>Add Collaborators</p>
   <form action="" method="post">
     {% csrf_token %}
     <select name="collab" id="">
@@ -31,24 +43,21 @@
     .then((newEditor) => {
       editor = newEditor;
 
-      // Function to send editor content over WebSocket
       function sendContent() {
         const content = editor.getData();
         socket.send(
-          JSON.stringify({ type: "update_content", content: content })
+          JSON.stringify({ type: "send_content", content: content })
         );
       }
 
-      // Event listener for editor changes
       editor.model.document.on("change:data", sendContent);
 
-      // WebSocket connection
-      const socket = new WebSocket("ws://" + window.location.host + "/ws/");
+      const socket = new WebSocket("ws://" + window.location.host + "/ws/document/{{doc.id}}");
       console.log(socket)
-      // Event listener for WebSocket messages
+
       socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
-        if (data.type === "update_content") {
+        if (data.type === "send_content") {
           editor.setData(data.content);
         }
       };
