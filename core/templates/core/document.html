@@ -30,41 +30,20 @@
 <hr>
 <h1>Classic editor</h1>
 <div id="editor">
-  <p>This is some sample content.</p>
+  <form action="" method="post">
+    {% csrf_token %}
+    {{editor_form.as_p}}
+    {{editor_form.media}}
+    <button type="submit">Submit</button>
+  </form>
 </div>
 
 {% endblock content %}
 
 {% block script %}
 <script>
-  let editor;
-
-  ClassicEditor.create(document.querySelector("#editor"))
-    .then((newEditor) => {
-      editor = newEditor;
-
-      function sendContent() {
-        const content = editor.getData();
-        socket.send(
-          JSON.stringify({ type: "send_content", content: content })
-        );
-      }
-
-      editor.model.document.on("change:data", sendContent);
-
-      const socket = new WebSocket("ws://" + window.location.host + "/ws/document/{{doc.id}}");
-      console.log(socket)
-
-      socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-        if (data.type === "send_content") {
-          editor.setData(data.content);
-        }
-      };
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+  const content = tinyMCE.activeEditor.getContent();
+  console.log(content)
 </script>
 
 {% endblock script %}
