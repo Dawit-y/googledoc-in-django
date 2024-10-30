@@ -3,40 +3,43 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 class EditorConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.doc_id = self.scope['url_route']['kwargs']['doc_id']
-        self.chat_group_name = f'chat_{self.doc_id}'
-
+        self.document_id = self.scope['url_route']['kwargs']['document_id']
+        self.room_group_name = f"editor_{self.document_id}"
+        # Join the document room
         await self.channel_layer.group_add(
-            self.chat_group_name,
+            self.room_group_name,
             self.channel_name
         )
 
         await self.accept()
 
     async def disconnect(self, close_code):
+        # Leave the document room
         await self.channel_layer.group_discard(
-            self.chat_group_name,
+            self.room_group_name,
             self.channel_name
         )
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        if data.get('type') == 'send_content':
-            content = data.get('content')
+        content = data['content']
+        print("Received content from frontend:", content)
 
-            await self.channel_layer.group_send(
-                self.chat_group_name,
-                {
-                    'type': 'send_content',
-                    'content': content
-                }
-            )
+        # Send the content to the document room
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "document_edit",
+                "content": content,
+            }
+        )
 
-    async def send_content(self, event):
-        content = event['content']
+    async def document_edit(self, event):
+        content = event["content"]
+
+        # Send content to WebSocket
         await self.send(text_data=json.dumps({
-            'type': 'send_content',
-            'content': content
+            "content": content
         }))
 
 class ChatConsumer(AsyncWebsocketConsumer):

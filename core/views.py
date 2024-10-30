@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from .models import Document, User
 from .forms import DocumentForm
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
 
 
 def home(request):
@@ -29,3 +31,21 @@ def document(request, id):
         doc.save()
     
     return render(request, 'core/document.html', {'new_collaborators': users, "collaborators" : collaborators, "doc" : doc, "editor_form": editor_form}) 
+
+
+def login_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        
+        user = authenticate(request, username=email, password=password)
+        
+        if user is not None:
+            # Login the user
+            login(request, user)
+            return redirect("home")  # Redirect to home page or any other success page
+        else:
+            # Show error message if authentication fails
+            messages.error(request, "Invalid email or password.")
+    
+    return render(request, "core/login.html")

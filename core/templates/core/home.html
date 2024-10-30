@@ -40,7 +40,46 @@
 
 {% endblock content %}
 
-
 {% block script %}
+<script>
+  // Initialize TinyMCE
+  tinymce.init({
+    selector: 'textarea',
+    setup: function (editor) {
+      const documentId = "your_document_id"; // Replace with the actual document ID
+      const socket = new WebSocket(`ws://${window.location.host}/ws/editor/${documentId}/`);
 
+      // Variable to keep track of the current content
+      let currentContent = editor.getContent();
+
+      // Send editor content changes to WebSocket on keyup
+      editor.on('keyup', function (e) {
+        const content = editor.getContent();
+
+        // Send only if the content has changed to avoid redundant data transmission
+        if (content !== currentContent) {
+          currentContent = content;
+          console.log("Editor content on keyup:", content);
+          socket.send(JSON.stringify({ 'content': content }));
+        }
+      });
+
+      // Receive updated content from WebSocket and update the editor
+      socket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+
+        // Update the editor only if the received content differs from the current content
+        if (data.content !== currentContent) {
+          currentContent = data.content;
+          editor.setContent(data.content);
+        }
+      };
+
+      // Handle WebSocket connection close
+      socket.onclose = function (e) {
+        console.error('WebSocket closed unexpectedly');
+      };
+    }
+  });
+</script>
 {% endblock script %}
