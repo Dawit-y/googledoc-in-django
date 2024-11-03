@@ -1,49 +1,121 @@
-{% extends "main.html" %}
+{% extends "base.html" %}
 
 {% load static %}
 
 {% block content%}
 
-<span>
-  <p>Collaborators</p>
-  {% if collaborators %}
-  <ul>
-    {% for collab in collaborators %}
-    <li>{{collab.email}}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-</span>
-<hr>
-<div>
-  <p>Add Collaborators</p>
+<div class="mt-16 mb-10">
   <form action="" method="post">
     {% csrf_token %}
-    <select name="collab" id="">
-      {% for collab in new_collaborators %}
-      <option value={{collab.id}}>{{collab.email}}</option>
-      {% endfor %}
-    </select>
-    <button type="submit">Add</button>
-  </form>
-</div>
-<hr>
-<h1>Classic editor</h1>
-<div id="editor">
-  <form action="" method="post">
-    {% csrf_token %}
-    {{editor_form.as_p}}
+    {{editor_form|safe}}
     {{editor_form.media}}
-    <button type="submit">Submit</button>
   </form>
 </div>
 
 {% endblock content %}
 
 {% block script %}
-<script>
-  const content = tinyMCE.activeEditor.getContent();
-  console.log(content)
+
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize Summernote editor
+    const editor = $('#summernote').summernote();
+
+    // Establish WebSocket connection
+    const documentId = "{{ document_id }}";
+    const socket = new WebSocket(`ws://${window.location.host}/ws/editor/${documentId}/`);
+
+    // Variable to keep track of the current content
+    let currentContent = '';
+
+    // Listen for keyup events in the Summernote editor's editable area
+    $('#summernote').on('keyup', function () {
+      console.log("Keyup event triggered");
+      const contents = editor.summernote('code'); // Get the current content
+      console.log("Editor content on keyup:", contents); // Log the content
+
+      // Send content only if it has changed
+      if (contents !== currentContent) {
+        currentContent = contents;
+
+        // Send the updated content to the backend via WebSocket
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({
+            'type': 'content_change',
+            'content': contents
+          }));
+        }
+      }
+    });
+
+    // Handle incoming messages from the WebSocket
+    socket.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      console.log("Received data from server:", data);
+
+      // Update the editor content only if it differs from the current content
+      if (data.content && data.content !== currentContent) {
+        currentContent = data.content;
+        editor.summernote('code', data.content);
+      }
+    };
+
+    // Handle WebSocket connection open
+    socket.onopen = function () {
+      console.log('WebSocket connection established');
+    };
+
+    // Handle WebSocket connection close
+    socket.onclose = function (e) {
+      console.error('WebSocket closed unexpectedly');
+    };
+
+    // Handle WebSocket errors
+    socket.onerror = function (error) {
+      console.error('WebSocket error:', error);
+    };
+  });
 </script>
 
+<script>
+  // // Initialize TinyMCE
+  // tinymce.init({
+  //   selector: 'textarea',
+  //   setup: function (editor) {
+  //     const documentId = "your_document_id"; // Replace with the actual document ID
+  //     const socket = new WebSocket(`ws://${window.location.host}/ws/editor/${documentId}/`);
+
+  //     // Variable to keep track of the current content
+  //     let currentContent = editor.getContent();
+
+  //     // Send editor content changes to WebSocket on keyup
+  //     editor.on('keyup', function (e) {
+  //       const content = editor.getContent();
+
+  //       // Send only if the content has changed to avoid redundant data transmission
+  //       if (content !== currentContent) {
+  //         currentContent = content;
+  //         console.log("Editor content on keyup:", content);
+  //         socket.send(JSON.stringify({ 'content': content }));
+  //       }
+  //     });
+
+  //     // Receive updated content from WebSocket and update the editor
+  //     socket.onmessage = function (event) {
+  //       const data = JSON.parse(event.data);
+
+  //       // Update the editor only if the received content differs from the current content
+  //       if (data.content !== currentContent) {
+  //         currentContent = data.content;
+  //         editor.setContent(data.content);
+  //       }
+  //     };
+
+  //     // Handle WebSocket connection close
+  //     socket.onclose = function (e) {
+  //       console.error('WebSocket closed unexpectedly');
+  //     };
+  //   }
+  // });
+</script>
 {% endblock script %}

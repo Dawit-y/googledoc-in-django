@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tailwind_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %} | Sign Up {% endblock title %}
+
+{% block content%}
+
+<section class="mt-20 mx-auto w-1/2">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Sign Up</h2>
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field|as_crispy_field }}
+            {% if field.errors %}
+            <div class="text-red-500">
+                {% for error in field.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button class="bg-gray-900 rounded-lg py-2 px-4 border border-white/[0.9]  text-white text-center font-bold"
+            type="submit">Sign Up</button>
+    </form>
+</section>
+
+{% endblock content %}

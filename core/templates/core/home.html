@@ -1,85 +1,92 @@
-{% extends "main.html" %}
+{% extends "base.html" %}
 
-{% load static %}
+{% load static crispy_forms_tags %}
 
-{% block content%}
-<div class="document-toolbar">
-  <div class="untitled">
-    Untitled
-  </div>
-  <div class="untitled2">
-  </div>
+{% block content %}
+
+<div class="mt-20 mb-10">
+  <!-- Main Form -->
+  <form id="documentForm" action="{% url 'home' %}" method="post" class="mt-6">
+    {% csrf_token %}
+    <!-- Trigger modal for entering document name -->
+    <label for="create" class="text-gray-700 text-sm font-bold mb-2 mr-2">Before collaborating, create a document
+      first</label>
+    <button id="create" type="button" name="create"
+      class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2 px-4 mb-4 rounded-lg mt-6">
+      Create
+    </button>
+    <div class="mb-4">
+      {{ form.media }}
+      {{ form.body|safe }}
+    </div>
+  </form>
 </div>
 
-<form action="" method="post">
-  {% csrf_token %}
-  {{editor.as_p}}
-  {{editor.media}}
-</form>
-
-<section class="modal container">
-  <div class="modal__container" id="modal-container">
-    <div class="modal__content">
-      <div class="modal__close close-modal" title="Close">
-        <i class='bx bx-x'></i>
+<!-- Modal -->
+<div id="createDocumentModal"
+  class="hidden fixed top-16 inset-0 bg-gray-500 bg-opacity-75 items-center justify-center z-50">
+  <div class="bg-white p-8 rounded w-1/2 mx-auto">
+    <form id="modalForm" class="bg-white rounded-lg overflow-hidden">
+      <div class="px-6 py-4 w-full">
+        <h2 class="text-xl font-bold mb-2">Enter Document Name</h2>
+        <label for="document-name" class="block text-gray-700 text-sm font-bold mb-2">Name</label>
+        <input type="text" id="document-name" name="name"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          required>
       </div>
-
-      <h1 class="modal__title">Good Job!</h1>
-      <p class="modal__description">Click the button to close</p>
-
-      <button class="modal__button modal__button-width">
-        View status
-      </button>
-
-      <button class="modal__button-link close-modal">
-        Close
-      </button>
-    </div>
+      <div class="px-6 py-4 flex justify-end space-x-4">
+        <button id="cancel" type="button"
+          class="bg-gray-500 rounded-lg py-2 px-4 border border-white/[0.9]  text-white text-center font-bold">Cancel</button>
+        <!-- Submit button to save form -->
+        <button id="saveButton" type="button"
+          class="bg-gray-900 rounded-lg py-2 px-4 border border-white/[0.9]  text-white text-center font-bold">Save</button>
+      </div>
+    </form>
   </div>
-</section>
+</div>
 
 {% endblock content %}
 
 {% block script %}
 <script>
-  // Initialize TinyMCE
-  tinymce.init({
-    selector: 'textarea',
-    setup: function (editor) {
-      const documentId = "your_document_id"; // Replace with the actual document ID
-      const socket = new WebSocket(`ws://${window.location.host}/ws/editor/${documentId}/`);
 
-      // Variable to keep track of the current content
-      let currentContent = editor.getContent();
+  // Modal display controls
+  const createDocumentBtn = document.getElementById("create");
+  const createDocumentModal = document.getElementById("createDocumentModal");
+  const cancelBtn = document.getElementById("cancel");
 
-      // Send editor content changes to WebSocket on keyup
-      editor.on('keyup', function (e) {
-        const content = editor.getContent();
+  createDocumentBtn.addEventListener("click", function () {
+    createDocumentModal.classList.remove("hidden");
+    createDocumentModal.classList.add("flex");
+  });
 
-        // Send only if the content has changed to avoid redundant data transmission
-        if (content !== currentContent) {
-          currentContent = content;
-          console.log("Editor content on keyup:", content);
-          socket.send(JSON.stringify({ 'content': content }));
-        }
-      });
+  cancelBtn.addEventListener("click", function () {
+    hideModal();
+  });
 
-      // Receive updated content from WebSocket and update the editor
-      socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
+  function hideModal() {
+    createDocumentModal.classList.add("hidden");
+  }
 
-        // Update the editor only if the received content differs from the current content
-        if (data.content !== currentContent) {
-          currentContent = data.content;
-          editor.setContent(data.content);
-        }
-      };
-
-      // Handle WebSocket connection close
-      socket.onclose = function (e) {
-        console.error('WebSocket closed unexpectedly');
-      };
+  window.addEventListener("click", function (event) {
+    if (event.target === createDocumentModal) {
+      hideModal();
     }
+  });
+
+  window.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      hideModal();
+    }
+  });
+
+  // Handle Save button click
+  document.getElementById("saveButton").addEventListener("click", function () {
+    const documentForm = document.getElementById("documentForm");
+    const documentName = document.getElementById("document-name");
+
+    documentForm.append(documentName)
+    documentForm.submit();
   });
 </script>
 {% endblock script %}

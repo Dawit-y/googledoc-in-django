@@ -23,10 +23,6 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
-    path('tinymce/', include('tinymce.urls')),
+    path("__reload__/", include("django_browser_reload.urls")),
+    path('summernote/', include('django_summernote.urls')),
 ]
-
-
-urlpatterns += [
-    path("ckeditor5/", include('django_ckeditor_5.urls'), name="ck_editor_5_upload_file"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

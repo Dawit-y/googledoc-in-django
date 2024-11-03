@@ -1,0 +1,34 @@
+{% load static tailwind_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+	<script src="https://unpkg.com/htmx.org@1.8.4"></script>
+	<!-- Load jQuery from a CDN -->
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<!-- include libraries(jQuery, bootstrap) -->
+	<!-- include summernote css/js -->
+	<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote.min.js"></script>
+	{% tailwind_css %}
+	<title>CoEdit {% block title %} {% endblock title %}</title>
+	{% block style %}{% endblock style %}
+</head>
+
+<body>
+	<header>
+		{% include 'navbar.html' %}
+	</header>
+	<main class="container mx-auto">
+		{% block content %} {% endblock content %}
+	</main>
+	<!-- {% comment %} {% include 'footer.html' %} {% endcomment %} -->
+	{% block script %} {% endblock script %}
+</body>
+
+</html>
